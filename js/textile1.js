@@ -1,3 +1,7 @@
+function guide() {
+	window.location.href="/guides/Recyclo_Guide_Textile.pdf";
+}
+
 function storeTextileQuantity() {
     const quantity = document.getElementById('textileQuantity').value;
 

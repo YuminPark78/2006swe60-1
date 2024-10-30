@@ -1,3 +1,7 @@
+function Guide() {
+	window.location.href = '/guides/Recyclo_Guide_Recyclable.pdf';
+}
+
 function storerecyclingtype() {
     const plasticBottlesSelected = document.getElementById("plasticBottles").checked;
     const cansSelected = document.getElementById("cans").checked;
