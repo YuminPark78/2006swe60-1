@@ -1,3 +1,7 @@
+function Guide() {
+	window.location.href = '/guides/Recyclo_Guide_Ewaste.pdf';
+}
+
 function storecategories() {
     const selectedcategories = []; 
 
