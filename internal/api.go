@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -46,9 +47,9 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Category parameter is required", http.StatusBadRequest)
 		return
 	}
-
+	db := GetDatabaseHandler("db/data.db")
 	// Use a parameterized query to safely insert the category
-	rows, err := DB.Query(
+	rows, err := db.ConcurrentRead(
 		`SELECT Locations.*
 		FROM Locations
 		JOIN RecycleCategory 
@@ -59,21 +60,15 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}(rows)
-
 	// Create a slice to hold the results
 	var locations []Location
-	for rows.Next() {
-		var loc Location
-		if err := rows.Scan(&loc.Name, &loc.OpeningHours, &loc.Address, &loc.Latitude, &loc.Longitude); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	for _, row := range rows {
+		Name := row["Name"]
+		OpeningHours := row["Opening Hours"]
+		Address := row["Address"]
+		Longitude, _ := strconv.ParseFloat(row["Longitude"], 64)
+		Latitude, _ := strconv.ParseFloat(row["Latitude"], 64)
+		loc := Location{Longitude: Longitude, Latitude: Latitude, Name: Name, OpeningHours: OpeningHours, Address: Address}
 		locations = append(locations, loc)
 	}
 
