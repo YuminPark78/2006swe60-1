@@ -81,7 +81,7 @@ func GetLocationComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use a parameterized query to safely insert the category
-	db := GetDatabaseHandler("db/datum.db")
+	db := GetDatabaseHandler("db/data.db")
 	rows, err := db.ConcurrentRead(
 		`SELECT Comments.*
 		FROM Comments
