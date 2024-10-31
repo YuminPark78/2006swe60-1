@@ -14,7 +14,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -60,20 +59,8 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// Create a slice to hold the results
-	var locations []Location
-	for _, row := range rows {
-		Name := row["Name"]
-		OpeningHours := row["Opening Hours"]
-		Address := row["Address"]
-		Longitude, _ := strconv.ParseFloat(row["Longitude"], 64)
-		Latitude, _ := strconv.ParseFloat(row["Latitude"], 64)
-		loc := Location{Longitude: Longitude, Latitude: Latitude, Name: Name, OpeningHours: OpeningHours, Address: Address}
-		locations = append(locations, loc)
-	}
-
 	// Send the results as JSON
-	err = json.NewEncoder(w).Encode(locations)
+	err = json.NewEncoder(w).Encode(rows)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
