@@ -200,6 +200,26 @@ func (handler *DatabaseHandler) writeProcessor() {
 	}
 }
 
+// Write enqueues a write request, which is processed sequentially by writeProcessor
+func (handler *DatabaseHandler) Write(query string, args ...interface{}) error {
+	req := WriteRequest{
+		Query: query,
+		Args:  args,
+		Done:  make(chan error, 1),
+	}
+
+	fmt.Printf("Enqueuing Write request: %s, args: %v\n", query, args)
+	handler.writeCh <- req
+
+	err := <-req.Done
+	if err != nil {
+		fmt.Printf("Write operation failed: %v\n", err)
+	} else {
+		fmt.Println("Write operation completed successfully")
+	}
+	return err
+}
+
 // CloseAllDatabaseHandlers closes all open DatabaseHandler instances
 func CloseAllDatabaseHandlers() {
 	dbHandlersLock.Lock()
