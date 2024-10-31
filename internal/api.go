@@ -81,7 +81,8 @@ func GetLocationComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use a parameterized query to safely insert the category
-	rows, err := DB.Query(
+	db := GetDatabaseHandler("db/datum.db")
+	rows, err := db.ConcurrentRead(
 		`SELECT Comments.*
 		FROM Comments
 		WHERE Comments.Latitude = ? AND Comments.Longitude =?`, lat, long)
@@ -89,26 +90,8 @@ func GetLocationComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}(rows)
-
-	// Create a slice to hold the results
-	var comments []Comment
-	for rows.Next() {
-		var loc Comment
-		if err := rows.Scan(&loc.Latitude, &loc.Longitude, &loc.Username, &loc.Comment, &loc.Date); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		comments = append(comments, loc)
-	}
-
 	// Send the results as JSON
-	err = json.NewEncoder(w).Encode(comments)
+	err = json.NewEncoder(w).Encode(rows)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
