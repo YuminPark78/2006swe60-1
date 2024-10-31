@@ -3,149 +3,76 @@ import sqlite3
 import time
 from tqdm import tqdm
 
-def get_lat_long(address):
-    url = "https://www.onemap.gov.sg/api/common/elastic/search"
-    params = {
-        "searchVal": address,
-        "returnGeom": "Y",
-        "getAddrDetails": "Y",
-        "pageNum": 1,
-    }
-    try:
-        response = requests.get(url, params=params)
+# OneMap API endpoint and database connection
+API_URL = "https://www.onemap.gov.sg/api/common/elastic/search"
+DB_PATH = "data.db"  # Replace with your actual database path
 
-        # Check if the response is valid
-        if response.status_code != 200:
-            print(f"Error: Received status code {response.status_code} for address: {address}")
-            return None, None
-
-        # Try to decode JSON response
-        data = response.json()
-        if data and 'results' in data and len(data['results']) > 0:
-            result = data['results'][0]
-            lat = result['LATITUDE']
-            lon = result['LONGITUDE']
-            return lat, lon
-        else:
-            print(f"No data found for address: {address}")
-            return None, None
-
-    except requests.exceptions.RequestException as e:
-        print(f"Request failed for address {address}: {e}")
-        return None, None
-
-# Full addresses dataset with name, opening hours, and address
-data = [
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "636", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "637", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "638", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "639", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "640", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "641", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "642", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "643", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "644", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "645", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "646", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "647", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "648", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir Road / Jalan Tenaga", "block_number": "649", "collection_frequency": "Wednesday", "address": "Bedok Reservoir Road / Jalan Tenaga, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "761", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "762", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "763", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "764", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "765", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "766", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "767", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "768", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "769", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "770", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "771", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "772", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "773", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok Reservoir View", "block_number": "774", "collection_frequency": "Wednesday", "address": "Bedok Reservoir View, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "31", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "32", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "33", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "34", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "35", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "36", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "37", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "62", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "63", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "64", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "65", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "1", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "2", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "3", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "4", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "19", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "20", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "21", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "5", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "6", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "7", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "8", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "10B", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "10C", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "10D", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "10E", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "10F", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 2", "block_number": "14", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 2, Singapore"},
-    {"name": "Bedok South Avenue 3", "block_number": "155", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 3, Singapore"},
-    {"name": "Bedok South Avenue 3", "block_number": "156", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 3, Singapore"},
-    {"name": "Bedok South Avenue 3", "block_number": "157", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 3, Singapore"},
-    {"name": "Bedok South Avenue 3", "block_number": "158", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 3, Singapore"},
-    {"name": "Bedok South Avenue 3", "block_number": "159", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 3, Singapore"},
-    {"name": "Bedok South Avenue 3", "block_number": "160", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 3, Singapore"},
-    {"name": "Bedok South Avenue 3", "block_number": "161", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 3, Singapore"},
-    {"name": "Bedok South Avenue 3", "block_number": "162", "collection_frequency": "Monday, Wednesday, Friday", "address": "Bedok South Avenue 3, Singapore"}
+# List of postal codes
+postal_codes = [
+    "467360", "188021", "059413", "538766", "769098",
+    "238839", "529536", "129588", "797653", "608532"
 ]
-# SQLite database connection
-conn = sqlite3.connect('data.db')
+
+# Connect to SQLite database
+conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 
-# Loop through each address, geocode it, and insert it into the SQLite database
-for entry in tqdm(data):
-    if entry["name"] == "Bedok South Avenue 3":
-        address = "460"+''.join(x for x in entry['block_number'] if not x.isalpha()).zfill(3)
-    elif entry["name"] == "Bedok South Avenue 2":
-        address = "460"+''.join(x for x in entry['block_number'] if not x.isalpha()).zfill(3)
-    elif entry["name"] == "Bedok Reservoir View":
-        address = "470"+''.join(x for x in entry['block_number'] if not x.isalpha()).zfill(3)
-    else:
-        address = "410"+''.join(x for x in entry['block_number'] if not x.isalpha()).zfill(3)
-    latitude, longitude = get_lat_long(address)
-    address = f"Blk {entry['block_number']} {entry['name']}, Singapore {address}"
-    name = "Blk "+entry['block_number'] + " Recycling Bin"
-    if latitude and longitude:
-        try:
-            # Check if the entry already exists in the database
-            cursor.execute('''
-                SELECT * FROM Locations WHERE Latitude = ? AND Longitude = ?
-            ''', (latitude, longitude))
-            existing_entry = cursor.fetchone()
-
-            # Insert or replace the entry based on whether it already exists
-            cursor.execute('''
-                INSERT OR REPLACE INTO Locations (Name, Address, Latitude, Longitude, "Opening Hours")
-                VALUES (?, ?, ?, ?, ?)
-            ''', (name, address, latitude, longitude, entry['collection_frequency']))
-
-            if existing_entry:
-                print(f"Replaced {entry['name']} Block {entry['block_number']} with new lat: {latitude}, long: {longitude}")
-            else:
-                print(f"Inserted new entry {entry['name']} Block {entry['block_number']} with lat: {latitude}, long: {longitude}")
-
-        except sqlite3.Error as e:
-            print(f"SQLite error for {entry['name']} Block {entry['block_number']}: {e}")
-    else:
-        print(f"Could not geocode {address}")
+# Loop through each postal code and retrieve data
+for postal_code in postal_codes:
+    # Prepare API parameters
+    params = {
+        "searchVal": postal_code,
+        "returnGeom": "Y",
+        "getAddrDetails": "Y",
+        "pageNum": "1"
+    }
     
-    # Sleep to avoid overwhelming the API with requests (rate limiting)
-    time.sleep(1)
+    try:
+        # Send request to OneMap API
+        response = requests.get(API_URL, params=params)
+        response.raise_for_status()  # Raise exception for HTTP errors
+        data = response.json()
 
-# Commit the changes and close the database connection
+        # Check if search results are available
+        if data["found"] > 0:
+            result = data["results"][0]  # Take the first result
+            address = result.get("ADDRESS", "Unknown")
+            latitude = float(result["LATITUDE"])
+            longitude = float(result["LONGITUDE"])
+
+            # Use address as the building name with "Clothes Bin" appended
+            name = f"{address} Refash"
+            opening_hours = "All time year round"
+
+            # Insert or replace in Locations table
+            cursor.execute("""
+                SELECT COUNT(*) FROM Locations WHERE Latitude = ? AND Longitude = ?
+            """, (latitude, longitude))
+            exists_location = cursor.fetchone()[0] > 0
+
+            if exists_location:
+                # Update existing entry
+                cursor.execute("""
+                    UPDATE Locations
+                    SET Name = ?, "Opening Hours" = ?, Address = ?
+                    WHERE Latitude = ? AND Longitude = ?
+                """, (name, opening_hours, address, latitude, longitude))
+                print(f"Entry for postal code {postal_code} ({address}) has been replaced in Locations.")
+            else:
+                # Insert new entry
+                cursor.execute("""
+                    INSERT INTO Locations (Name, "Opening Hours", Address, Latitude, Longitude)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (name, opening_hours, address, latitude, longitude))
+                print(f"Entry for postal code {postal_code} ({address}) has been added to Locations.")
+
+    except requests.RequestException as e:
+        print(f"Error fetching data for postal code {postal_code}: {e}")
+    except sqlite3.Error as e:
+        print(f"Error inserting data into database: {e}")
+
+# Commit and close database connection
 conn.commit()
 conn.close()
-print("All data inserted or replaced successfully!")
+
+print("Data retrieval and insertion complete.")
