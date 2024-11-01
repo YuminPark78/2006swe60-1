@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/http"
@@ -426,11 +425,6 @@ func AddBookmark(w http.ResponseWriter, r *http.Request) {
         VALUES (?, ?, ?)`, username, coords.Lat, coords.Long)
 
 	if err != nil {
-		var sqliteErr sqlite3.Error
-		if errors.As(err, &sqliteErr) && errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-			fmt.Printf("bookmark already exists for username: %s", username)
-			return
-		}
 		fmt.Printf("failed to insert bookmark: %w", err)
 		return
 	}
