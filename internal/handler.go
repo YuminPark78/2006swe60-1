@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"crypto/aes"
 	"crypto/cipher"
+	"strings"
 )
 
 // RegisterUser handles user registration requests
@@ -110,12 +111,28 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	_, err = DB.Exec("INSERT INTO Users (username, hashedPassword, salt, email) VALUES (?, ?, ?, ?)", username, hex.EncodeToString(hashedPassword), hex.EncodeToString(salt), email)
 	if err != nil {
 		log.Printf("SQL Insert Error: %v", err)
-		w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusBadRequest)
-        json.NewEncoder(w).Encode(map[string]interface{}{
-            "success": false,
-            "message": "Username already taken or SQL error",
-        })
+		
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			if strings.Contains(err.Error(), "Users.username") {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"message": "Username already taken",
+				})
+			} else if strings.Contains(err.Error(), "Users.email") {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"message": "Email already taken",
+				})
+			} else {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"message": "Unknown SQL error",
+				})
+			}
+		}
 		return
 	}
 
