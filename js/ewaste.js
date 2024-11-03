@@ -7,7 +7,7 @@ function Guide() {
 function storerecyclingtype() {
     const ICTSelected = document.getElementById("ICT").checked;
     const batteriesSelected = document.getElementById("Batteries").checked;
-    const othersSelected = document.getElementById("others").checked;
+    const othersSelected = document.getElementById("Others").checked;
     const lampsSelected = document.getElementById("lamps").checked;
 
 
