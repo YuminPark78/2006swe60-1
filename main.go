@@ -42,8 +42,6 @@ func cleanUpExpiredSessions(db *sql.DB) {
 }
 
 func main() {
-	internal.InitDB()
-	defer internal.DB.Close() // Close the database connection when the server stops
 	imagefileServer := http.FileServer(http.Dir("./images"))
 	http.Handle("/images/", http.StripPrefix("/images/", imagefileServer))
 	jsfileServer := http.FileServer(http.Dir("./js"))
@@ -131,12 +129,13 @@ func main() {
 	defer ticker.Stop()
 
 	// Run cleanup immediately on startup
-	go cleanUpExpiredSessions(internal.DB)
-
+	db := internal.GetDatabaseHandler("db/data.db")
+	go db.CleanUpExpiredSessions()
+	defer internal.CloseAllDatabaseHandlers()
 	// Periodically run cleanup function on every tick
 	go func() {
 		for range ticker.C {
-			cleanUpExpiredSessions(internal.DB)
+			db.CleanUpExpiredSessions()
 		}
 	}()
 } // Also, you can try interactive lessons for GoLand by selecting 'Help | Learn IDE Features' from the main menu.

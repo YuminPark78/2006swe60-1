@@ -320,6 +320,38 @@ func getTableColumns(db *sql.DB, tableName string) ([]string, error) {
 	return columns, nil
 }
 
+func (handler *DatabaseHandler) CleanUpExpiredSessions() {
+	// 30 minutes in seconds
+	expiryTime := int64(30 * 60)
+
+	// SQL query to delete sessions older than 30 minutes based on Unix timestamp
+	query := `DELETE FROM LoggedIn WHERE Timestamp < (strftime('%s', 'now') - ?)`
+
+	// Execute the query, passing expiryTime as the parameter
+	result, err := handler.db.Exec(query, expiryTime)
+	if err != nil {
+		log.Printf("Error cleaning up expired sessions: %v", err)
+		return
+	}
+
+	query = `DELETE FROM SessionKeys WHERE Timestamp < (strftime('%s', 'now') - ?)`
+
+	// Execute the query, passing expiryTime as the parameter
+	result, err = handler.db.Exec(query, expiryTime)
+	if err != nil {
+		log.Printf("Error cleaning up expired sessions: %v", err)
+		return
+	}
+
+	// Check how many rows were affected (optional)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("Error fetching affected rows: %v", err)
+		return
+	}
+	log.Printf("Expired sessions cleaned up. Rows affected: %d\n", rowsAffected)
+}
+
 // CloseAllDatabaseHandlers closes all open DatabaseHandler instances
 func CloseAllDatabaseHandlers() {
 	dbHandlersLock.Lock()
