@@ -40,7 +40,8 @@ func generateClientKey(sessionID string) error {
 	})
 	timestamp := time.Now().Unix()
 	// Store keys in the database
-	_, err = DB.Exec("INSERT INTO SessionKeys (sessionID, privateKey, publicKey,timestamp) VALUES (?, ?, ?, ?)",
+	db := GetDatabaseHandler("db/data.db")
+	err = db.Write("INSERT INTO SessionKeys (sessionID, privateKey, publicKey,timestamp) VALUES (?, ?, ?, ?)",
 		sessionID, privateKeyPEM, publicKeyPEM, timestamp)
 	return err
 }
@@ -53,7 +54,9 @@ func ServeClientPublicKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var publicKey string
-	err := DB.QueryRow("SELECT publicKey FROM SessionKeys WHERE sessionID = (?)", sessionID).Scan(&publicKey)
+	db := GetDatabaseHandler("db/data.db")
+	err := db.ConcurrentRetrieveValue(&publicKey, `SELECT publicKey FROM SessionKeys WHERE sessionID = (?)`, sessionID)
+	fmt.Printf(publicKey)
 	if err != nil {
 		err := generateClientKey(sessionID)
 		if err != nil {
@@ -80,7 +83,7 @@ func storeAESKey(clientID string, aesKey []byte) error {
 	return err
 }
 
-// Decrypt AES key received from client and store it in the database
+// DecryptClientAESKey received from client and store it in the database
 func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 	clientID := r.URL.Query().Get("sessionID")
 	if clientID == "" {

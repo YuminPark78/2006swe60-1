@@ -3,6 +3,7 @@ package internal
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	_ "modernc.org/sqlite" // SQLite driver
@@ -173,15 +174,22 @@ func (handler *DatabaseHandler) ConcurrentRetrieveValue(dest *string, query stri
 	var value interface{}
 	row := handler.db.QueryRow(query, args...)
 	if err := row.Scan(&value); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			fmt.Println("No rows returned for the given sessionID")
+			return fmt.Errorf("no rows found for the specified sessionID")
+		}
 		fmt.Printf("Error scanning single value: %v\n", err)
 		return err
 	}
 
-	// Convert the value to a string and assign it to dest
-	if value != nil {
-		*dest = fmt.Sprintf("%v", value) // Convert to string using fmt.Sprintf
-	} else {
-		*dest = "" // Handle NULL values by setting dest to an empty string
+	// Handle byte slice and convert to string
+	switch v := value.(type) {
+	case []byte:
+		*dest = string(v) // Convert byte slice to string
+	case string:
+		*dest = v // Assign string directly
+	default:
+		return fmt.Errorf("unexpected type for database value: %T", v)
 	}
 
 	fmt.Printf("ConcurrentRetrieveValue completed with value: %s\n", *dest)
