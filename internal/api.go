@@ -167,9 +167,9 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	var hashedPassword string
 	// SQL query to retrieve the hashed password for the given username
 	query := `SELECT hashedPassword FROM Users WHERE username = ?`
-
+	db := GetDatabaseHandler("db/data.db")
 	// Execute the query and scan the result into the hashedPassword variable
-	err = DB.QueryRow(query, username).Scan(&hashedPassword)
+	err = db.ConcurrentRetrieveValue(&hashedPassword, query, username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("username %s not found", username)
@@ -185,7 +185,7 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 
 	var salt string
 	query = `SELECT salt FROM Users WHERE username = ?`
-	err = DB.QueryRow(query, username).Scan(&salt)
+	err = db.ConcurrentRetrieveValue(&salt, query, username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("username %s not found", username) // Username doesn't exist
@@ -226,7 +226,7 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	loginID := hex.EncodeToString(loginIDBytes)
 
 	timestamp := time.Now().Unix()
-	_, err = DB.Exec(`
+	err = db.Write(`
 		INSERT INTO LoggedIn (Username, LoginID, timestamp) 
 		VALUES (?, ?, ?)
 		ON CONFLICT(Username) DO UPDATE 
