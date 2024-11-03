@@ -5,21 +5,14 @@ body {
     background-color: #F7FFED;
     margin: 0;
     padding: 0;
-    padding-top: 150px;
-    
+   
 
 }
-.navbarcontainer {
-    position: fixed; 
-    top: 0; 
-    width: 100%; 
-    z-index: 999; 
-    box-shadow: var(--box-shadow);
-}
+
 
 h1 {
     font-family: 'Poppins', sans-serif;
-    font-size: 75px;
+    font-size: 60px;
     color: #181818;
     opacity: 0.8;
   }
@@ -66,8 +59,12 @@ h1 {
     flex: 1 1 calc(33.33% - 10px);
     margin: 10px 0;
     text-align: center;
-    max-width: 450px;
-    max-height: calc (50vh-10px);
+    max-width: 320px;
+   
+}
+.second-row .column {
+    flex: 1 1 calc(33.33% - 10px);
+    max-width: 320px;
 }
 
 .image-container {

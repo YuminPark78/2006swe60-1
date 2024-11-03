@@ -15,9 +15,7 @@ h1 {
   }
 
   .proceed-button {
-    position: fixed;
-    bottom: 5px;
-    right: 20px;
+    position: absolute;
     border-radius: 18px;
     padding: 4px 15px;
     background-color: #4E7A6A;

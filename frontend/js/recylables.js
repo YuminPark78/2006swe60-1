@@ -25,7 +25,7 @@ function storerecyclingtype() {
 }
 
 /*document.addEventListener('DOMContentLoaded', () => {
-    fetch('sc2006 software eng webdev/html/navbar.html')
+    fetch('/web/navbar.html')
         .then(res => res.text())
         .then(data => {
             document.getElementById('navbar').innerHTML = data;

@@ -9,6 +9,8 @@ h1 {
     font-size: 75px;
     color: #181818;
     opacity: 0.8;
+    margin-top: 100px;
+    margin-bottom: 60px;
   }
 
   .recycling-guide {
@@ -26,8 +28,8 @@ h1 {
 
 .proceed-button {
     position: fixed;
-    bottom: 5px;
-    right: 20px;
+    bottom:40px;
+    right: 40px;
     border-radius: 18px;
     padding: 4px 15px;
     background-color: #4E7A6A;
@@ -47,15 +49,12 @@ h1 {
 
 .column {
     flex: 1 1 calc(33.33% - 20px);
-    margin: 10px 0;
+    margin: 5px 0;
     text-align: center;
-    max-width: 450px;
+    max-width: 350px;
 }
 
-.second-row .column {
-    flex: 1 1 calc(33.33% - 20px);
-    max-width: 450px;
-}
+
 
 .image-container {
     position: relative;
