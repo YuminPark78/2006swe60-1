@@ -2,9 +2,11 @@ package internal
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	_ "modernc.org/sqlite" // SQLite driver
+	"reflect"
 	"strings"
 	"sync"
 )
@@ -218,6 +220,75 @@ func (handler *DatabaseHandler) Write(query string, args ...interface{}) error {
 		fmt.Println("Write operation completed successfully")
 	}
 	return err
+}
+
+// WriteJSON accepts a table name and JSON data, validates it, and writes it to the table.
+func (handler *DatabaseHandler) WriteJSON(tableName string, jsonData []byte) error {
+	// Parse JSON into a map
+	var dataMap map[string]interface{}
+	err := json.Unmarshal(jsonData, &dataMap)
+	if err != nil {
+		return fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	// Get the table schema (column names and order)
+	columns, err := getTableColumns(handler.db, tableName)
+	if err != nil {
+		return fmt.Errorf("failed to get table schema: %v", err)
+	}
+
+	// Ensure JSON keys match the table columns
+	jsonKeys := reflect.ValueOf(dataMap).MapKeys()
+	jsonKeySet := make(map[string]struct{})
+	for _, key := range jsonKeys {
+		jsonKeySet[key.String()] = struct{}{}
+	}
+	for _, col := range columns {
+		if _, exists := jsonKeySet[col]; !exists {
+			return fmt.Errorf("JSON is missing required field: %s", col)
+		}
+	}
+
+	// Generate SQL query and argument list
+	var placeholders []string
+	var args []interface{}
+	for _, col := range columns {
+		placeholders = append(placeholders, "?")
+		args = append(args, dataMap[col])
+	}
+	query := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, tableName, strings.Join(columns, ", "), strings.Join(placeholders, ", "))
+
+	// Call the original Write function
+	return handler.Write(query, args...)
+}
+
+// Helper function to get the columns of a table
+func getTableColumns(db *sql.DB, tableName string) ([]string, error) {
+	query := fmt.Sprintf("PRAGMA table_info(%s);", tableName)
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get table info: %v", err)
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			fmt.Printf("Error closing rows: %v\n", err)
+			return
+		}
+	}(rows)
+
+	var columns []string
+	for rows.Next() {
+		var cid int
+		var name, typ string
+		var notnull, pk int
+		var dfltValue interface{}
+		if err := rows.Scan(&cid, &name, &typ, &notnull, &dfltValue, &pk); err != nil {
+			return nil, fmt.Errorf("failed to scan table info: %v", err)
+		}
+		columns = append(columns, name)
+	}
+	return columns, nil
 }
 
 // CloseAllDatabaseHandlers closes all open DatabaseHandler instances

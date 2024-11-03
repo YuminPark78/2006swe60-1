@@ -282,7 +282,8 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		Location string `json:"location"`
 		Comment  string `json:"comment"`
 	}
-	rows, err := DB.Query(`
+	db := GetDatabaseHandler("db/data.db")
+	rows, err := db.ConcurrentRead(`
         SELECT c.Date, l.Name AS Location, c.Comment
         FROM Comments c
         JOIN Locations l ON c.Latitude = l.Latitude AND c.Longitude = l.Longitude
@@ -291,37 +292,16 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to retrieve data: %v", err)
 		return
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}(rows)
-
-	var found = false
-	var comments []Comment
-	for rows.Next() {
-		var comment Comment
-		if err := rows.Scan(&comment.Date, &comment.Location, &comment.Comment); err != nil {
-			return
-		}
-		comments = append(comments, comment)
-		found = true
-	}
-
-	if err = rows.Err(); err != nil {
-		fmt.Printf("Failed to parse data: %v", err)
-		return
-	}
-	if !found {
-		err := json.NewEncoder(w).Encode("You haven't commented!")
+	if len(rows) < 1 {
+		fmt.Printf("No Comments")
+		err = json.NewEncoder(w).Encode("You haven't commented")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		return
 	}
-	err = json.NewEncoder(w).Encode(comments)
+	err = json.NewEncoder(w).Encode(rows)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -455,7 +435,8 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `Not Logged In`, http.StatusBadRequest)
 	}
 	var date = time.Now().Format("2006-01-02")
-	_, err = DB.Exec(`
+	db := GetDatabaseHandler("db/data.db")
+	err = db.Write(`
         INSERT INTO Comments (Username, Latitude, Longitude, Comment, Date)
         VALUES (?, ?, ?, ?, ?)`, username, comment.Lat, comment.Long, comment.Comment, date)
 
