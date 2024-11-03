@@ -1,16 +1,16 @@
 package internal
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
-	"encoding/json"
-	"encoding/base64"
-	"crypto/aes"
-	"crypto/cipher"
 	"strings"
 )
 
@@ -20,26 +20,30 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	// Parse the JSON body
 	var req struct {
 		SessionID  string `json:"sessionid"`
 		Username   string `json:"username"`
 		Ciphertext string `json:"ciphertext"`
 		IV         string `json:"iv"`
-		Email	   string `json:"email"`
+		Email      string `json:"email"`
 	}
-	
+
 	// Decode the JSON Body
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		fmt.Println(err)
 		w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusBadRequest)
-        json.NewEncoder(w).Encode(map[string]interface{}{
-            "success": false,
-            "message": "Invalid request body",
-        })
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Invalid request body",
+		})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		return
 	}
 
@@ -88,7 +92,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("failed to decrypt: %v", err)
 		return
 	}
-	
+
 	username := req.Username
 	password := string(plaintext)
 	email := req.Email
@@ -108,40 +112,57 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert the new user into the database
-	_, err = DB.Exec("INSERT INTO Users (username, hashedPassword, salt, email) VALUES (?, ?, ?, ?)", username, hex.EncodeToString(hashedPassword), hex.EncodeToString(salt), email)
+	db := GetDatabaseHandler("db/data.db")
+	err = db.Write("INSERT INTO Users (username, hashedPassword, salt, email) VALUES (?, ?, ?, ?)", username, hex.EncodeToString(hashedPassword), hex.EncodeToString(salt), email)
 	if err != nil {
 		log.Printf("SQL Insert Error: %v", err)
-		
+
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			if strings.Contains(err.Error(), "Users.username") {
 				w.WriteHeader(http.StatusBadRequest)
-				json.NewEncoder(w).Encode(map[string]interface{}{
+				err := json.NewEncoder(w).Encode(map[string]interface{}{
 					"success": false,
 					"message": "Username already taken",
 				})
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
 			} else if strings.Contains(err.Error(), "Users.email") {
 				w.WriteHeader(http.StatusBadRequest)
-				json.NewEncoder(w).Encode(map[string]interface{}{
+				err := json.NewEncoder(w).Encode(map[string]interface{}{
 					"success": false,
 					"message": "Email already taken",
 				})
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
-				json.NewEncoder(w).Encode(map[string]interface{}{
+				err := json.NewEncoder(w).Encode(map[string]interface{}{
 					"success": false,
 					"message": "Unknown SQL error",
 				})
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
 			}
 		}
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(map[string]interface{}{
-        "success": true,
-        "message": "User registered successfully!",
-    })
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "User registered successfully!",
+	})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -149,17 +170,20 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 		Username string `json:"username"`
 		Email    string `json:"email"`
 	}
-	
+
 	// Get the username from the session
 	username := GetUser(w, r)
 	if username == "" {
 		http.Error(w, "Not signed in", http.StatusForbidden)
 		return
 	}
-	
+
 	// Retrieve user profile from the database
 	var userProfile UserProfile
-	err := DB.QueryRow(`SELECT username, email FROM Users WHERE username = ?`, username).Scan(&userProfile.Username, &userProfile.Email)
+	const query = `SELECT email FROM Users WHERE username = ?`
+	db := GetDatabaseHandler("db/data.db")
+	err := db.ConcurrentRetrieveValue(&userProfile.Email, query, username)
+	userProfile.Username = username
 	if err != nil {
 		http.Error(w, "Error retrieving user data", http.StatusInternalServerError)
 		log.Printf("Error retrieving user data: %v", err)
@@ -167,5 +191,8 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(userProfile)
+	err = json.NewEncoder(w).Encode(userProfile)
+	if err != nil {
+		return
+	}
 }
