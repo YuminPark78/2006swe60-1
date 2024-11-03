@@ -441,7 +441,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
         VALUES (?, ?, ?, ?, ?)`, username, comment.Lat, comment.Long, comment.Comment, date)
 
 	if err != nil {
-		fmt.Printf("failed to insert bookmark: %s", err.Error())
+		fmt.Printf("failed to insert comment: %s", err.Error())
 		return
 	}
 	return
