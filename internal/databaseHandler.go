@@ -196,6 +196,27 @@ func (handler *DatabaseHandler) ConcurrentRetrieveValue(dest *string, query stri
 	return nil
 }
 
+// ConcurrentCheckExist checks if a given SELECT EXISTS query returns any rows and returns a boolean indicating the existence.
+func (handler *DatabaseHandler) ConcurrentCheckExist(query string, args ...interface{}) (bool, error) {
+	// Check if the query starts with "SELECT EXISTS"
+	if !strings.HasPrefix(strings.ToUpper(strings.TrimSpace(query)), "SELECT EXISTS") {
+		log.Printf("ConcurrentCheckExist only supports SELECT EXISTS queries. Query received: %s\n", query)
+		return false, fmt.Errorf("ConcurrentCheckExist only supports SELECT EXISTS queries")
+	}
+
+	fmt.Printf("Starting ConcurrentCheckExist with query: %s, args: %v\n", query, args)
+
+	var exists bool
+	row := handler.db.QueryRow(query, args...)
+	if err := row.Scan(&exists); err != nil {
+		fmt.Printf("Error scanning existence check: %v\n", err)
+		return false, err
+	}
+
+	fmt.Printf("ConcurrentCheckExist completed with result: %v\n", exists)
+	return exists, nil
+}
+
 // writeProcessor processes each write request sequentially
 func (handler *DatabaseHandler) writeProcessor() {
 	defer handler.wg.Done()

@@ -63,7 +63,7 @@ func ServeClientPublicKey(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = DB.QueryRow("SELECT publicKey FROM SessionKeys WHERE sessionID = (?)", sessionID).Scan(&publicKey)
+		err = db.ConcurrentRetrieveValue(&publicKey, `SELECT publicKey FROM SessionKeys WHERE sessionID = (?)`, sessionID)
 	}
 
 	w.Header().Set("Content-Type", "application/x-pem-file")
@@ -79,7 +79,11 @@ func ServeClientPublicKey(w http.ResponseWriter, r *http.Request) {
 func storeAESKey(clientID string, aesKey []byte) error {
 	// Store the AES key in hex format
 	aesKeyHex := hex.EncodeToString(aesKey)
-	_, err := DB.Exec("UPDATE SessionKeys SET aesKey = (?) WHERE sessionID = (?)", aesKeyHex, clientID)
+	db := GetDatabaseHandler("db/data.db")
+	err := db.Write("UPDATE SessionKeys SET aesKey = (?) WHERE sessionID = (?)", aesKeyHex, clientID)
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
 	return err
 }
 
@@ -93,7 +97,8 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve the private key from the database
 	var privateKeyPEM string
-	err := DB.QueryRow("SELECT privateKey FROM SessionKeys WHERE sessionID = (?)", clientID).Scan(&privateKeyPEM)
+	db := GetDatabaseHandler("db/data.db")
+	err := db.ConcurrentRetrieveValue(&privateKeyPEM, "SELECT privateKey FROM SessionKeys WHERE sessionID = (?)", clientID)
 	if err != nil {
 		http.Error(w, "SessionID not found", http.StatusNotFound)
 		return
@@ -152,9 +157,10 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 // Retrieve the AES key for a client
 func getAESKey(clientID string) ([]byte, error) {
 	var aesKeyHex string
-	err := DB.QueryRow("SELECT aeskey FROM SessionKeys WHERE sessionID = (?)", clientID).Scan(&aesKeyHex)
+	db := GetDatabaseHandler("db/data.db")
+	err := db.ConcurrentRetrieveValue(&aesKeyHex, "SELECT aesKey FROM SessionKeys WHERE sessionID = (?)", clientID)
 	if err != nil {
-
+		fmt.Printf(err.Error())
 		return nil, err
 	}
 
@@ -174,7 +180,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) string {
 
 	// Query the database to validate the LoginID and retrieve the username
 	var username string
-	err = DB.QueryRow(`SELECT Username FROM LoggedIn WHERE LoginID = ?`, LoginID).Scan(&username)
+	db := GetDatabaseHandler("db/data.db")
+	err = db.ConcurrentRetrieveValue(&username, "SELECT Username FROM LoggedIn WHERE LoginID = (?)", LoginID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("invalid session")
@@ -192,7 +199,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) string {
 	loginID := hex.EncodeToString(loginIDBytes)
 
 	timestamp := time.Now().Unix()
-	_, err = DB.Exec(`
+	err = db.Write(`
 		INSERT INTO LoggedIn (Username, LoginID, timestamp) 
 		VALUES (?, ?, ?)
 		ON CONFLICT(Username) DO UPDATE 
@@ -225,7 +232,8 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	LoginID := cookie.Value
 
 	// Delete the logged in entry
-	_, err = DB.Exec(`DELETE FROM LoggedIn WHERE LoginID = ?`, LoginID)
+	db := GetDatabaseHandler("db/data.db")
+	err = db.Write(`DELETE FROM LoggedIn WHERE LoginID = ?`, LoginID)
 	if err != nil {
 		fmt.Printf(`Error:%v`, err)
 		return
@@ -237,9 +245,9 @@ func CheckRSAValidity(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Requires Key as Parameter", http.StatusBadRequest)
 		return
 	}
-	var exists = false
 	query := `SELECT EXISTS(SELECT 1 FROM SessionKeys WHERE SessionKeys.publicKey = ?)`
-	err := DB.QueryRow(query, body).Scan(&exists)
+	db := GetDatabaseHandler("db/data.db")
+	exists, err := db.ConcurrentCheckExist(query, body)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		http.Error(w, "Failed to check RSA key", http.StatusInternalServerError)
 		return
