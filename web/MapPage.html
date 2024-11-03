@@ -154,6 +154,9 @@
             newbutton.innerText = displaystring[i];
             newbutton.onclick = () => highlightSelected(locationcoords[i]);
             document.getElementById("sidebar").appendChild(newbutton);
+
+            const hrline=document.createElement("hr");
+            document.getElementById("sidebar").appendChild(hrline);
         }
     }
     function highlightSelected(coord){
