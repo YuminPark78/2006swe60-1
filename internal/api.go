@@ -425,7 +425,7 @@ func AddBookmark(w http.ResponseWriter, r *http.Request) {
         VALUES (?, ?, ?)`, username, coords.Lat, coords.Long)
 
 	if err != nil {
-		fmt.Printf("failed to insert bookmark: %w", err)
+		fmt.Printf("failed to insert bookmark: %s", err.Error())
 		return
 	}
 	return
@@ -460,7 +460,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
         VALUES (?, ?, ?, ?, ?)`, username, comment.Lat, comment.Long, comment.Comment, date)
 
 	if err != nil {
-		fmt.Printf("failed to insert bookmark: %w", err)
+		fmt.Printf("failed to insert bookmark: %s", err.Error())
 		return
 	}
 	return
