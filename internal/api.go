@@ -373,7 +373,7 @@ func AddBookmark(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Coordinate parameters required", http.StatusBadRequest)
 		return
 	}
-	db := GetDatabaseHandler("db/datum.db")
+	db := GetDatabaseHandler("db/data.db")
 	err = db.Write(`
         INSERT INTO Bookmarks (Username, Latitude, Longitude)
         VALUES (?, ?, ?)`, username, coords.Lat, coords.Long)
@@ -407,6 +407,8 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	username := GetUser(w, r)
 	if username == "" {
 		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		fmt.Printf("Not Logged In")
+		return
 	}
 	var date = time.Now().Format("2006-01-02")
 	db := GetDatabaseHandler("db/data.db")

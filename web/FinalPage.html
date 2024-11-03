@@ -77,14 +77,28 @@
 
 
   document.getElementById("postcomment").addEventListener("click", newcomment);
-  function newcomment()
-  {
-    const newComment = document.getElementById("new-comment").value;
-    const commentContainer = document.getElementById("comment-container");
-    const commentElement = document.createElement("p");
-    commentElement.innerText = newComment;
-    commentContainer.appendChild(commentElement);
-    document.getElementById("new-comment").value = "";
+  async function newcomment() {
+      const newComment = document.getElementById("new-comment").value;
+      const commentContainer = document.getElementById("comment-container");
+      const commentElement = document.createElement("p");
+      commentElement.innerText = newComment;
+      commentContainer.appendChild(commentElement);
+      document.getElementById("new-comment").value = "";
+      const params = {
+          lat: sessionStorage.getItem("lat"),
+          long: sessionStorage.getItem("long"),
+          comment: newComment
+      }
+      let response = await fetch('/addComment', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'}, // JSON content type
+          body: JSON.stringify(params) // Convert payload to JSON
+      });
+      if (response.ok) {
+          await getLocationCommentAsync()
+      } else {
+          document.getElementById("debug").innerText = await response.text();
+      }
   }
 
 
