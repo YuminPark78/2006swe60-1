@@ -2,29 +2,35 @@ function Guide() {
 	window.location.href = '/guides/Recyclo_Guide_Ewaste.pdf';
 }
 
-function storecategories() {
-    const selectedcategories = []; 
 
-    
-    if (document.getElementById("ICT equipment").checked) {
-        selectedcategories.push(document.getElementById("ICT equipment").value);
-    }
-    if (document.getElementById("Batteries").checked) {
-        selectedcategories.push(document.getElementById("Batteries").value);
-    }
-    if (document.getElementById("Lamps").checked) {
-        selectedcategories.push(document.getElementById("Lamps").value);
-    }
-    if (document.getElementById("ConsumerProducts").checked) {
-        selectedcategories.push(document.getElementById("ConsumerProducts").value);
-    }
-    if (document.getElementById("others").checked) {
-        selectedcategories.push(document.getElementById("others").value);
-    }
 
+function storerecyclingtype() {
+    const ICTSelected = document.getElementById("ICT").checked;
+    const batteriesSelected = document.getElementById("Batteries").checked;
+    const othersSelected = document.getElementById("others").checked;
+    const lampsSelected = document.getElementById("lamps").checked;
+
+
+    if (othersSelected){
+        sessionStorage.setItem("category", "others");
+    }
+    else if ((batteriesSelected) && (lampsSelected) && (ICTSelected))  {
+        sessionStorage.setItem("category", "ictbattlamps");
  
-    sessionStorage.setItem("SelectedCategories", JSON.stringify(selectedcategories));
+    }
+    else if ((batteriesSelected) && (lampsSelected)) {
+        sessionStorage.setItem("category", "battlamps");
   
+    }
+    else if ((batteriesSelected) && (ICTSelected)) {
+        sessionStorage.setItem("category", "ictbatt");
+    }
+
+    else if (batteriesSelected)
+    {
+        sessionStorage.setItem("category", "batteries");
+    }
+
 }
 
 function nextpage() {
@@ -34,7 +40,6 @@ function nextpage() {
         alert("Select at least one category");
         return;
     }
-    storecategories();
-    const selectedCategories = JSON.parse(sessionStorage.getItem("SelectedCategories"));
-    console.log("Selected Categories:", selectedCategories); 
+    storerecyclingtype()
+    
 }
