@@ -46,6 +46,15 @@
           // Await the parsing of both JSON responses
           let commentjson;
           commentjson = await response.json();
+          if(commentjson===null){
+              const comment = document.createElement("p");
+              comment.innerText ="No comments yet! Be the first to comment."
+              document.getElementById("commentbar").appendChild(
+                  comment
+              );
+              regenerateQR();
+              return
+          }
           let comments = commentjson.sort(commentByDateComparator).map(
               comment => `[${comment["Username"]}]: ${comment["Comment"]}`
           )

@@ -26,7 +26,7 @@ function redirect() {
     }
     else
     {
-        sessionStorage.setItem("textile","clothesbin");
+        sessionStorage.setItem("category","clothesbin");
         window.location.href="/map";
     }
 }

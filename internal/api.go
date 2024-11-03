@@ -315,13 +315,8 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `Not Logged In`, http.StatusBadRequest)
 		return
 	}
-	type Bookmark struct {
-		Name      string `json:"name"`
-		Address   string `json:"address"`
-		Latitude  string `json:"latitude"`
-		Longitude string `json:"longitude"`
-	}
-	rows, err := DB.Query(`
+	db := GetDatabaseHandler("db/data.db")
+	rows, err := db.ConcurrentRead(`
         SELECT l.Name AS Name, l.Address AS Address, l.Latitude AS Latitude, l.Longitude AS Longitude
         FROM Bookmarks b
         JOIN Locations l ON b.Latitude = l.Latitude AND b.Longitude = l.Longitude
@@ -330,36 +325,14 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to retrieve data: %v", err)
 		return
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}(rows)
-
-	var found = false
-	var bookmarks []Bookmark
-	for rows.Next() {
-		var bookmark Bookmark
-		if err := rows.Scan(&bookmark.Name, &bookmark.Address, &bookmark.Latitude, &bookmark.Longitude); err != nil {
-			return
-		}
-		bookmarks = append(bookmarks, bookmark)
-		found = true
-	}
-
-	if err = rows.Err(); err != nil {
-		fmt.Printf("Failed to parse data: %v", err)
-		return
-	}
-	if !found {
+	if len(rows) < 1 {
 		err := json.NewEncoder(w).Encode("You have no bookmarks")
 		if err != nil {
 			return
 		}
 		return
 	}
-	err = json.NewEncoder(w).Encode(bookmarks)
+	err = json.NewEncoder(w).Encode(rows)
 	if err != nil {
 		return
 	}
@@ -400,7 +373,8 @@ func AddBookmark(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Coordinate parameters required", http.StatusBadRequest)
 		return
 	}
-	_, err = DB.Exec(`
+	db := GetDatabaseHandler("db/datum.db")
+	err = db.Write(`
         INSERT INTO Bookmarks (Username, Latitude, Longitude)
         VALUES (?, ?, ?)`, username, coords.Lat, coords.Long)
 
