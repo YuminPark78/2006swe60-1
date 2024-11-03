@@ -41,5 +41,5 @@ function nextpage() {
         return;
     }
     storerecyclingtype()
-    
+    window.location.href="/map";
 }
