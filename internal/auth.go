@@ -225,6 +225,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) string {
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 	// Retrieve the LoginID from the cookie
 	cookie, err := r.Cookie("loginID")
 	if err != nil {
@@ -240,6 +241,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf(`Error:%v`, err)
 		return
 	}
+
 }
 func CheckRSAValidity(w http.ResponseWriter, r *http.Request) {
 	body := r.URL.Query().Get("key")
