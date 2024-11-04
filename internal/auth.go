@@ -15,6 +15,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -157,6 +158,7 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 // Retrieve the AES key for a client
 func getAESKey(clientID string) ([]byte, error) {
 	var aesKeyHex string
+	clientID = strings.ReplaceAll(clientID, "+", " ")
 	db := GetDatabaseHandler("db/data.db")
 	err := db.ConcurrentRetrieveValue(&aesKeyHex, "SELECT aesKey FROM SessionKeys WHERE sessionID = (?)", clientID)
 	if err != nil {

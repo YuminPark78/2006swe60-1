@@ -21,7 +21,8 @@ async function onSubmit(){
         body: JSON.stringify(payload) // Convert payload to JSON
     });
     if (response.ok) {
-        document.getElementById("debug").innerText = "Logged in!";
+        alert("Logged in Successfully");
+        window.location.href = "/"
     } else {
         alert(await response.text());
     }
