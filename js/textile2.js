@@ -1,5 +1,6 @@
-
-
+function guide() {
+	window.location.href="/guides/Recyclo_Guide_Textile.pdf";
+}
 
 function nextpage()
 {
