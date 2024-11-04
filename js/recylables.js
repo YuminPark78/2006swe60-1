@@ -18,12 +18,12 @@ function storerecyclingtype() {
         sessionStorage.setItem("category", "recyclensave");
         // console.log("Category set to: recyclensave");
     } else if (anythElseSelected && !others) {
-        sessionStorage.setItem("category", "cashfortrash");
+        sessionStorage.setItem("category", "CashForTrash");
         // console.log("Category set to: cashfortrash");
     }
     else if (others)
     {
-        sessionStorage.setItem("category", "recyclingbins");
+        sessionStorage.setItem("category", "RecycleBins");
     }
 
 }
