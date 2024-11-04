@@ -14,30 +14,40 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const commentsContainer = document.getElementById('comments');
+            const response = await fetch("/getComments")
+            if(response.status===401) alert("Please login to see your comments")
+            if(response.status !== 200) alert(await response.text())
+            const comments = await response.json()
+            comments.forEach(
+                comment=>{
+                    const commentdiv = document.createElement('div');
+                    commentdiv.className = 'eachcomment';
 
-            fetch('https://dummyjson.com/comments') // replace with the actual database -> dummy api for now
-                .then(res => res.json())
-                .then(data => {
-                    commentsContainer.innerHTML = ''; 
-                    data.comments.forEach(comment => {
-                        const commentdiv = document.createElement('div');
-                        commentdiv.className = 'eachcomment';  
+                    const username = document.createElement('div');
+                    username.className = 'username';
+                    username.textContent = comment["Location"];
 
-                        const username = document.createElement('div');
-                        username.className = 'username';
-                        username.textContent = comment.user.username;
+                    const text = document.createElement('div');
+                    text.className = 'text';
+                    text.textContent = comment["Comment"];
 
-                        const text = document.createElement('div');
-                        text.className = 'text';
-                        text.textContent = comment.body;
+                    const date = document.createElement('div');
+                    date.className = 'text';
+                    date.textContent = comment["Date"];
 
-                        commentdiv.append(username,text);
-                        commentsContainer.appendChild(commentdiv);
-                    });
-                })
-                
+                    commentdiv.append(username);
+                    commentdiv.appendChild(text)
+                    commentdiv.appendChild(date)
+                    commentdiv.addEventListener("click", ()=>{
+                        sessionStorage.setItem("lat",comment["Latitude"])
+                        sessionStorage.setItem("long",comment["Longitude"])
+                        window.location.href = "/final"
+                    })
+                    commentsContainer.appendChild(commentdiv);
+                }
+            )
         });
     </script>
 </body>

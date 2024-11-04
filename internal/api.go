@@ -278,14 +278,9 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `Not Logged In`, http.StatusUnauthorized)
 		return
 	}
-	type Comment struct {
-		Date     string `json:"date"`
-		Location string `json:"location"`
-		Comment  string `json:"comment"`
-	}
 	db := GetDatabaseHandler("db/data.db")
 	rows, err := db.ConcurrentRead(`
-        SELECT c.Date, l.Name AS Location, c.Comment
+        SELECT c.Date, l.Name AS Location, c.Comment, c.Longitude, c.Latitude
         FROM Comments c
         JOIN Locations l ON c.Latitude = l.Latitude AND c.Longitude = l.Longitude
         WHERE c.Username = ?`, username)
