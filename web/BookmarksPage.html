@@ -1,11 +1,44 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recylo</title>
+    <link rel="stylesheet" href="/css/pastcomments.css">
 </head>
 <body>
-<h1 id="debug"></h1>
+<h1>See your past bookmarks</h1>
+<div class="container">
+    <div id="bookmarks"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const bookmarksContainer = document.getElementById('bookmarks');
+        const response = await fetch("/getBookmarks")
+        if(response.status===401) alert("Please login to see your bookmarks")
+        if(response.status !== 200) alert(await response.text())
+        const bookmarks = await response.json()
+        bookmarks.forEach(
+            bookmark=>{
+                const bookmarkdiv = document.createElement('div');
+                bookmarkdiv.className = 'eachbookmark';
+
+                const username = document.createElement('div');
+                username.className = 'username';
+                username.textContent = bookmark["Address"];
+
+                bookmarkdiv.append(username);
+                bookmarkdiv.addEventListener("click", ()=>{
+                    sessionStorage.setItem("lat",bookmark["Latitude"])
+                    sessionStorage.setItem("long",bookmark["Longitude"])
+                    window.location.href = "/final"
+                })
+                bookmarksContainer.appendChild(bookmarkdiv);
+            }
+        )
+    });
+</script>
 </body>
-<script></script>
 </html>

@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="/css/finalpage.css">
 </head>
 
-<body onload="getLocationCommentAsync()">
+<body onload="await getLocationCommentAsync()">
     <!-- Header / Navbar -->
     <header id="header" class="header_area">
         <div class="main-menu">
@@ -128,9 +128,10 @@
       const lat = sessionStorage.getItem("lat");
       const long = sessionStorage.getItem("long");
       document.getElementById("qr").src = QRCodeBuilder(gMapUriBuilder(lat, long));
+
   }
 
-
+  regenerateQR();
   document.getElementById("postcomment").addEventListener("click", newcomment);
   async function newcomment() {
       const newComment = document.getElementById("new-comment").value;
