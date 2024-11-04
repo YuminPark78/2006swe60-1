@@ -88,8 +88,8 @@ h1 {
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 20px;
+    font-family: 'Poppins', sans-serif;
     opacity: 0;
     z-index: 2;
     transition: opacity 0.3s ease;
