@@ -23,6 +23,6 @@ async function onSubmit(){
     if (response.ok) {
         document.getElementById("debug").innerText = "Logged in!";
     } else {
-        document.getElementById("debug").innerText = await response.text();
+        alert(await response.text());
     }
 }
