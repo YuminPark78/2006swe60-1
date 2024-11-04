@@ -263,7 +263,8 @@ func GetUsername(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `Not Logged In`, http.StatusBadRequest)
 		return
 	}
-	err := json.NewEncoder(w).Encode(username)
+	response := map[string]string{"username": username}
+	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
