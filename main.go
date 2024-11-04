@@ -87,7 +87,7 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/register.html")
 	})
-	http.HandleFunc("/bookmarks", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/bookmarkspage", func(w http.ResponseWriter, r *http.Request) {
 
 		username := internal.GetUser(w, r)
 		if username == "" {
