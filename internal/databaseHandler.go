@@ -175,8 +175,8 @@ func (handler *DatabaseHandler) ConcurrentRetrieveValue(dest *string, query stri
 	row := handler.db.QueryRow(query, args...)
 	if err := row.Scan(&value); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			fmt.Println("No rows returned for the given sessionID")
-			return fmt.Errorf("no rows found for the specified sessionID")
+			fmt.Println("No rows returned for the given condition")
+			return err
 		}
 		fmt.Printf("Error scanning single value: %v\n", err)
 		return err
