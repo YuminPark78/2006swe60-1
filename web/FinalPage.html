@@ -70,6 +70,7 @@
     <h1 style="text-align: center;padding-top: 7rem">Scan the QR Code below</h1>
     <p id="debug"> THIS PAGE LOADED, TRUST</p>
     <img id="qr" alt="QR Code" src="">
+    <button id="AddBookmark" onclick="addbookmark()"></button>
     <div id="commentbar">
         <h2>Comments: </h2>
         <h3>Please add your comments: </h3>
@@ -161,7 +162,19 @@
           document.getElementById("debug").innerText = await response.text();
       }
   }
-
+  async function addbookmark(){
+      const payload = {
+          lat: sessionStorage.getItem("lat"),
+          long: sessionStorage.getItem("long")
+      };
+      let response = await fetch('/addBookmark', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'}, // JSON content type
+          body: JSON.stringify(payload) // Convert payload to JSON
+      });
+      if (response.status===401) alert("You need to be logged in");
+      if (response.ok) alert("Added to bookmarks")
+  }
 
 </script>
 </html>

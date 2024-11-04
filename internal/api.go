@@ -260,7 +260,7 @@ func GetUsername(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	username := GetUser(w, r)
 	if username == "" {
-		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		http.Error(w, `Not Logged In`, http.StatusUnauthorized)
 		return
 	}
 	response := map[string]string{"username": username}
@@ -275,7 +275,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	username := GetUser(w, r)
 	if username == "" {
-		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		http.Error(w, `Not Logged In`, http.StatusUnauthorized)
 		return
 	}
 	type Comment struct {
@@ -313,7 +313,7 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	username := GetUser(w, r)
 	if username == "" {
-		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		http.Error(w, `Not Logged In`, http.StatusUnauthorized)
 		return
 	}
 	db := GetDatabaseHandler("db/data.db")
@@ -366,7 +366,7 @@ func AddBookmark(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	username := GetUser(w, r)
 	if username == "" {
-		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		http.Error(w, `Not Logged In`, http.StatusUnauthorized)
 		return
 	}
 	// Check if the category is provided
@@ -407,7 +407,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	username := GetUser(w, r)
 	if username == "" {
-		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		http.Error(w, `Not Logged In`, http.StatusUnauthorized)
 		fmt.Printf("Not Logged In")
 		return
 	}

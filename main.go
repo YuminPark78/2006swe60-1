@@ -113,7 +113,7 @@ func main() {
 	http.HandleFunc("/logout", internal.Logout)
 	http.HandleFunc("/getComments", internal.GetComments)
 	http.HandleFunc("/getBookmarks", internal.GetBookmarks)
-	http.HandleFunc("/AddBookmark", internal.AddBookmark)
+	http.HandleFunc("/addBookmark", internal.AddBookmark)
 	http.HandleFunc("/addComment", internal.AddComment)
 	http.HandleFunc("/checkRSA", internal.CheckRSAValidity)
 
