@@ -62,8 +62,7 @@
                         </div>
                     </li>
                     </ul>
-                </div>
-                </nav>
+            </nav>
         </div>
     </header>
     <h1 style="text-align: center;padding-top: 7rem">Map Page</h1>
@@ -230,20 +229,23 @@
         }).toString();
         try {
             // Await multiple fetch requests simultaneously
-            const [response1, response2] = await Promise.all([
-                fetch(addressResolverUri(input)),
-                fetch(window.location.href+`api/location?${params}`)
-            ]);
-            // Check if both responses are okay
-            if (!response1.ok) throw new Error(`Error fetching from address resolver: ${await response1.text()}`);
-            if (!response2.ok) throw new Error(`Error fetching from location database: ${await response2.text()}`);
-
-            // Await the parsing of both JSON responses
             let startjson;
             [startjson, locationjson] = await Promise.all([
-                response1.json(),
-                response2.json()
-            ]);
+                fetch(addressResolverUri(input))
+                    .then(response1 => {
+                        if (!response1.ok) throw new Error(`Error fetching from address resolver: ${response1.statusText}`);
+                        return response1.json();
+                    }),
+                fetch(`${window.location.href}api/location?${params}`)
+                    .then(response2 => {
+                        if (!response2.ok) throw new Error(`Error fetching from location database: ${response2.statusText}`);
+                        return response2.json();
+                    })
+            ])
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                    // Handle the error (e.g., show an error message to the user)
+                });
 
 
             const results = startjson.results[0];
@@ -272,6 +274,4 @@
         window.location.href = "./final";
     }
 </script>
-
-</body>
 </html>
