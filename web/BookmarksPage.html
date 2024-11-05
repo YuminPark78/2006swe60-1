@@ -70,7 +70,12 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const bookmarksContainer = document.getElementById('bookmarks');
             const response = await fetch("/getBookmarks")
-            if(response.status===401) alert("Please login to see your bookmarks")
+            if(response.status===401){
+                alert("Please login to see your bookmarks");
+                sessionStorage.setItem("prev","bookmarkspage");
+                window.location.href = "/login";
+                return
+            }
             if(response.status !== 200) alert(await response.text())
             const bookmarks = await response.json()
             bookmarks.forEach(

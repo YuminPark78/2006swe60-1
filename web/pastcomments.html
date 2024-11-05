@@ -69,7 +69,11 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const commentsContainer = document.getElementById('comments');
             const response = await fetch("/getComments")
-            if(response.status===401) alert("Please login to see your comments")
+            if(response.status===401){
+                alert("Please login to see your comments");
+                sessionStorage.setItem("prev", "comments");
+                window.location.href = "/login";
+            }
             if(response.status !== 200) alert(await response.text())
             const comments = await response.json()
             comments.forEach(

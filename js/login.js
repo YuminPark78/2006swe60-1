@@ -22,7 +22,7 @@ async function onSubmit(){
     });
     if (response.ok) {
         alert("Logged in Successfully");
-        window.location.href = "/"
+        window.location.href = "/" + sessionStorage.getItem("prev")
     } else {
         alert(await response.text());
     }

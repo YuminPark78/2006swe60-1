@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"test/internal"
@@ -88,12 +87,6 @@ func main() {
 		http.ServeFile(w, r, "./web/register.html")
 	})
 	http.HandleFunc("/bookmarkspage", func(w http.ResponseWriter, r *http.Request) {
-
-		username := internal.GetUser(w, r)
-		if username == "" {
-			http.Error(w, "Not signed in", 403)
-		}
-		fmt.Println(username)
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/BookmarksPage.html")
 	})
