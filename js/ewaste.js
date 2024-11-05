@@ -16,7 +16,6 @@ function storerecyclingtype() {
     }
     else if ((batteriesSelected) && (lampsSelected) && (ICTSelected))  {
         sessionStorage.setItem("category", "ictbattlamps");
- 
     }
     else if ((batteriesSelected) && (lampsSelected)) {
         sessionStorage.setItem("category", "battlamps");
@@ -30,7 +29,7 @@ function storerecyclingtype() {
     {
         sessionStorage.setItem("category", "batteries");
     }
-
+    else sessionStorage.setItem("category", "others");
 }
 
 function nextpage() {
