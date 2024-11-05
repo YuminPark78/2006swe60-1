@@ -23,7 +23,7 @@ function storerecyclingtype() {
     }
     else if (others)
     {
-        sessionStorage.setItem("category", "RecycleBins");
+        sessionStorage.setItem("category", "RecycleBin");
     }
 
 }
