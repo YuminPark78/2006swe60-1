@@ -12,8 +12,7 @@ function nextpage()
     
     if (dropoffSelected)
     {
-        sessionStorage.setItem("textile","refashdropoff");
-    
+        sessionStorage.setItem("category","refashdropoff");
         window.location.href="/map";
     }
     if (pickupSelected)
