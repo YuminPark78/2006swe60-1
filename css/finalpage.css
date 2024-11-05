@@ -3,29 +3,61 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    text-align: center;
     background-color: #F7FFED;
+    text-align: center;
 }
-h1 {
+
+.finalpage-header {
     font-family: 'Poppins', sans-serif;
     font-size: 75px;
+    font-weight: bolder;
     color: #181818;
     opacity: 0.8;
-  }
-
-
-  #postcomment {
-    background-color: #4E7A6A;
-    color: white;
-    font-family: 'Poppins', sans-serif;
-    cursor: pointer;
-    font-size: 24px;
-    border-radius: 16px;
-    padding: 5px 15px;
+    text-align: center;
+    padding-top: 7rem;
 }
 
+.qrcode {
+    padding: 3%;
+    text-align: center;
+}
+
+.bookmark-btn {
+    padding: 0 0 3% 0;
+    text-align: center;
+}
+
+.finalpage-button {
+    padding: 0.8rem 2.2rem;
+    font: normal 500 16px/ 20px 'Poppins', sans-serif;
+    position: relative;
+    border-color: #4E7A6A;
+    border-radius: 30px;
+    background: #4E7A6A;
+    background-clip: padding-box;
+    color: #F7FFED;
+    transition: background .6s ease;
+}
+
+.finalpage-button:hover {
+    background: #F7FFED;
+    background-clip: padding-box;
+    border-color: #4E7A6A;
+    border-radius: 30px;
+    color: #413F3D;
+}
+
+.commentbar{
+    font-weight: bolder;
+    text-align: center;
+}
+
+#postcomment{
+    margin-top: 1%;
+    margin-bottom: 3%;
+}
 
 #new-comment {
     font-size: 20px;
-    padding:10px
+    padding: 10px;
 }
