@@ -25,6 +25,7 @@ function storerecyclingtype() {
     {
         sessionStorage.setItem("category", "RecycleBin");
     }
+    else alert("You should not get here")
 
 }
 
