@@ -23,6 +23,7 @@ h1 {
   body {background-color: #F7FFED;}
 
 
+
   .recycling-guide {
     position: absolute;
     top: 100px;
@@ -56,12 +57,13 @@ h1 {
 
 .image-container {
     position: relative;
-    width: 100%;
+    width: 480px;
+    height: 400px;
 }
 
 .column img {
-    width: 100%;
-    height: auto;
+    width: 480px;
+    height: 400px;
     object-fit: cover;
 }
 
