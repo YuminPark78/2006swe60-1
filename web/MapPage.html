@@ -153,7 +153,7 @@
                 }
 
                 document.getElementById('map').src = displayPinsUri(
-                    500, 500, 15,
+                    500, 500, Math.min(Math.ceil(16.01-Math.log2((right-left)/0.00452185866)),Math.ceil(16.01-Math.log2((top-bottom)/0.00452185866))),
                     new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
                     [start].concat(pointlist),
                     colourlist
@@ -173,7 +173,7 @@
                 }
                 temp.splice(elementno,1);
                 document.getElementById('map').src = displayPinsUri(
-                    500, 500, 15,
+                    500, 500, Math.min(Math.ceil(16.01-Math.log2((right-left)/0.00452185866)),Math.ceil(16.01-Math.log2((top-bottom)/0.00452185866))),
                     new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
                     [start,selected].concat(temp),
                     colourlist
