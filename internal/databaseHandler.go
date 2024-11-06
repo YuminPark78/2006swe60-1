@@ -373,5 +373,11 @@ func (handler *DatabaseHandler) Close() error {
 	close(handler.writeCh)
 	handler.wg.Wait()
 	fmt.Println("DatabaseHandler closed")
+	_, err := handler.db.Exec("PRAGMA wal_checkpoint(FULL);")
+	if err != nil {
+		fmt.Printf("Failed to perform WAL checkpoint: %v\n", err)
+		return err
+	}
+	fmt.Println("WAL checkpoint completed successfully. WAL contents merged with the main database file.")
 	return handler.db.Close()
 }
