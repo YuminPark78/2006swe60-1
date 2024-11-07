@@ -81,7 +81,9 @@
 
         <!-- Map section -->
         <div id="map-container">
-            <img id="map" src="https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default&zoom=11&height=450&width=450&lat=1.366667&lng=103.8" alt="map of Singapore">
+            <iframe id="map" src="https://www.onemap.gov.sg/amm/amm.html">
+
+            </iframe>
         </div>
     </div>
 
@@ -133,13 +135,26 @@
         document.getElementById("debug").innerText = uri;
         return uri;
     }
+    function displayPinsUri2(width, height, scale, centre, pointlist, colourlist){
+        let uri =
+            `https://www.onemap.gov.sg/amm/amm.html?mapStyle=Default` +
+            `&zoomLevel=${scale}` +
+            `&marker=latLng=${centre.get('lat')},${centre.get('long')}`;
+
+        let i = 0; while (i<pointlist.length)
+            uri += `&marker=latLng:${pointlist[i].get("lat")},${pointlist[i].get("long")}!colour:${colourlist[i++]}`
+        uri += `&popupWidth=200`
+        console.log(uri)
+        document.getElementById("debug").innerText = uri;
+        return uri;
+    }
     function regenerateMap(pointlist, mode=0){
         let temp = pointlist.slice();
         let left = parseFloat(start.get("long"));
         let right = parseFloat(start.get("long"));
         let top = parseFloat(start.get("lat"));
         let bottom = parseFloat(start.get("lat"));
-        const colourlist = [[0, 0, 100]];
+        let colourlist = [[0, 0, 100]];
         switch(mode){
             case 0:
                 for(let i=0; i<pointlist.length; i++){
@@ -178,6 +193,44 @@
                     [start,selected].concat(temp),
                     colourlist
                 ); break;
+            case 2:
+                colourlist = ["red"];
+                for(let i=0; i<pointlist.length; i++){
+                    let y = parseFloat(pointlist[i].get("lat"));
+                    let x = parseFloat(pointlist[i].get("long"));
+                    if(y>top) top = y;
+                    if(y<bottom) bottom = y;
+                    if(x>right) right = x;
+                    if(x<left) left = x;
+                    colourlist.push("cadetblue");
+                }
+
+                document.getElementById('map').src = displayPinsUri2(
+                    500, 500, Math.min(Math.ceil(16.01-Math.log2((right-left)/0.00452185866)),Math.ceil(16.01-Math.log2((top-bottom)/0.00452185866))),
+                    new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
+                    [start].concat(pointlist),
+                    colourlist
+                ); break;
+            case 3:
+                colourlist = ["red","blue"]
+                elementno = 0;
+                for(let i=0; i<pointlist.length; i++){
+                    let y = parseFloat(pointlist[i].get("lat"));
+                    let x = parseFloat(pointlist[i].get("long"));
+                    if(y>top) top = y;
+                    if(y<bottom) bottom = y;
+                    if(x>right) right = x;
+                    if(x<left) left = x;
+                    colourlist.push("cadetblue");
+                    if(compareMaps(pointlist[i],selected)) elementno=i;
+                }
+                temp.splice(elementno,1);
+                document.getElementById('map').src = displayPinsUri2(
+                    500, 500, Math.min(Math.ceil(16.01-Math.log2((right-left)/0.00452185866)),Math.ceil(16.01-Math.log2((top-bottom)/0.00452185866))),
+                    new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
+                    [start,selected].concat(temp),
+                    colourlist
+                ); break;
         }
     }
     function regenerateSidebar(){
@@ -210,7 +263,7 @@
         map(location =>
             new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
         ));
-        regenerateMap(locationcoords,1);
+        regenerateMap(locationcoords,3);
         document.getElementById("submit").style.display="block";
     }
     async function submitLocationAsync() {
@@ -253,7 +306,7 @@
             ));
             document.getElementById("debug").innerText = locationcoords.toString();
 
-            regenerateMap(locationcoords,0);
+            regenerateMap(locationcoords,2);
             regenerateSidebar();
             // Display the results
         } catch (error) {
