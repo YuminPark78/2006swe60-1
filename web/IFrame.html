@@ -64,7 +64,7 @@
     <p id="debug"></p>
     <p id="latlong"></p>
     <p id="address"></p>
-    <button onclick="changeMap()"> Change Map Type</button>
+
     <button id="submit" style="display: none" onclick="redirectToFinal()">Let's fucking go</button>
 
     <div class="container">
@@ -81,7 +81,9 @@
 
         <!-- Map section -->
         <div id="map-container">
-            <img id="map" src="https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default&zoom=12&height=500&width=500&lat=1.348240100323755&lng=103.866921458975" alt="map of singapore">
+            <iframe id="map" src="https://www.onemap.gov.sg/amm/amm.html">
+
+            </iframe>
         </div>
     </div>
 
@@ -93,20 +95,8 @@
     let start = new Map();
     let selected = new Map();
     let locationjson;
-    const defaultdisplayNo = 8;
+    const defaultdisplayNo = 9;
     let displayedElementNo = defaultdisplayNo;
-    let maptype = false;
-    const iframe = document.createElement("iframe");
-    iframe.id = "map"
-    const image = document.createElement("img");
-    image.id = "map"
-    const changeMap = () => {
-        document.getElementById("map-container").removeChild(
-            document.getElementById("map")
-        )
-        maptype = !maptype
-        document.getElementById("map-container").appendChild(maptype?iframe:image);
-    }
     const locationDirectDistanceComparator = (a, b) =>
         ((a["Longitude"]-start.get("long"))**2+(a["Latitude"]-start.get("lat"))**2)**0.5 -
         ((b["Longitude"]-start.get("long"))**2+(b["Latitude"]-start.get("lat"))**2)**0.5;
@@ -223,7 +213,7 @@
                     colourlist
                 ); break;
             case 3:
-                colourlist = ["red","blue"]
+                colourlist = ["red","blue"];
                 elementno = 0;
                 for(let i=0; i<pointlist.length; i++){
                     let y = parseFloat(pointlist[i].get("lat"));
@@ -274,10 +264,7 @@
         map(location =>
             new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
         ));
-        if(!maptype)
-            regenerateMap(locationcoords,1);
-        else
-            regenerateMap(locationcoords,3);
+        regenerateMap(locationcoords,3);
         document.getElementById("submit").style.display="block";
     }
     async function submitLocationAsync() {
@@ -319,9 +306,8 @@
                 new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
             ));
             document.getElementById("debug").innerText = locationcoords.toString();
-            if(maptype)
-                regenerateMap(locationcoords,2)
-            else regenerateMap(locationcoords,0);
+
+            regenerateMap(locationcoords,2);
             regenerateSidebar();
             // Display the results
         } catch (error) {
