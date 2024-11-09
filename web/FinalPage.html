@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<script>console.Write("HERE")</script>
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -23,7 +22,7 @@
 
     <link rel="stylesheet" href="css/finalpage.css">
 </head>
-<body onload="await getLocationCommentAsync()">
+<body>
     <!-- Header / Navbar -->
     <header id="header" class="header_area">
         <div class="main-menu">
@@ -71,17 +70,18 @@
         <button class="finalpage-button" id="AddBookmark" onclick="addbookmark()">Add to Bookmarks</button>
     </div>
 
+    <h3 class="comment-header">Add Comments: </h3>
+    <div id="existing-comments">
+        <textarea name="" id="new-comment" cols="80" rows="8"></textarea>
+        <br>
+        <button class="finalpage-button" id="postcomment">Post</button>
+    </div>
+    <h3 class="your-comments">Your Comments: </h3>
     <div id="commentbar">
-        <h3 class="comment-header">Add Comments: </h3>
-        <div id="existing-comments">
-            <textarea name="" id="new-comment" cols="80" rows="8"></textarea>
-            <br>
-            <button class="finalpage-button" id="postcomment">Post</button>
-        </div>
     </div>
 
-    <h3 class="your-comments">Your Comments: </h3>
     <div id="comment-container"></div>
+    <p id="debug"></p>
 
     
 
@@ -90,7 +90,7 @@
 <script>
   const gMapUriBuilder = (lat, long) => `https://www.google.com/maps/place/${lat}+${long}`;
   const QRCodeBuilder = str => 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data='+encodeURIComponent(str)
-  const commentQueryUriBuilder = params => `${window.location.href.slice(0, location.href.lastIndexOf("/"))}/api/locationcomment?${params}`;
+  const commentQueryUriBuilder = params => `/locationcomment?${params}`;
   const commentByDateComparator = (a, b) => a["Date"].localeCompare(b["Date"]);
   async function getLocationCommentAsync(){
       const params = new URLSearchParams({
@@ -104,7 +104,7 @@
           document.getElementById("debug").innerText=uri;
           console.log(uri)
           // Check if both responses are okay
-          if (!response.ok) throw new Error(`${uri}`)
+          if (!response.ok) alert(await response.text())
           // Await the parsing of both JSON responses
           let commentjson;
           commentjson = await response.json();
@@ -120,6 +120,9 @@
           let comments = commentjson.sort(commentByDateComparator).map(
               comment => `[${comment["Username"]}]: ${comment["Comment"]}`
           )
+          while (document.getElementById("commentbar").firstChild)
+              document.getElementById("commentbar").removeChild(document.getElementById("commentbar").lastChild);
+
           for(let i=0;i<comments.length;i++){
               const comment = document.createElement("p");
               comment.innerText = comments[i];
@@ -137,31 +140,26 @@
       document.getElementById("qr").src = QRCodeBuilder(gMapUriBuilder(lat, long));
 
   }
-
   regenerateQR();
   document.getElementById("postcomment").addEventListener("click", newcomment);
   async function newcomment() {
-      const newComment = document.getElementById("new-comment").value;
-      const commentContainer = document.getElementById("comment-container");
-      const commentElement = document.createElement("p");
-      commentElement.innerText = newComment;
-      commentContainer.appendChild(commentElement);
-      document.getElementById("new-comment").value = "";
       const params = {
           lat: sessionStorage.getItem("lat"),
           long: sessionStorage.getItem("long"),
-          comment: newComment
+          comment: document.getElementById("new-comment").value
       }
       let response = await fetch('/addComment', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'}, // JSON content type
           body: JSON.stringify(params) // Convert payload to JSON
       });
+      if (response.status===401) alert("You need to be logged in");
       if (response.ok) {
           await getLocationCommentAsync()
       } else {
           document.getElementById("debug").innerText = await response.text();
       }
+      document.getElementById("new-comment").value = "";
   }
   async function addbookmark(){
       const payload = {
@@ -176,7 +174,16 @@
       if (response.status===401) alert("You need to be logged in");
       if (response.ok) alert("Added to bookmarks")
   }
-
+  if (document.readyState === "complete") {
+      // Document is fully loaded, so call the function immediately
+      getLocationCommentAsync();
+  } else {
+      // Otherwise, add an event listener for when the load event fires
+      window.addEventListener("load", async function() {
+          console.log("Window load event triggered");
+          await getLocationCommentAsync();
+      });
+  }
 </script>
 <script src="js/getUser.js"></script>
 </html>
