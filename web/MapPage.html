@@ -65,7 +65,9 @@
     <p id="latlong"></p>
     <p id="address"></p>
     <button onclick="changeMap()"> Change Map Type</button>
-    <button id="submit" style="display: none" onclick="redirectToFinal()">Let's fucking go</button>
+    <button class="proceed-button" id="submit" style="display: none" onclick="redirectToFinal()">Proceed</button>
+
+    
 
     <div class="container">
         <!-- Sidebar section -->
@@ -264,6 +266,7 @@
             document.getElementById("sidebar").appendChild(newbutton);
 
             const hrline=document.createElement("hr");
+            hrline.style.border = "3px solid "; 
             document.getElementById("sidebar").appendChild(hrline);
         }
     }
