@@ -104,7 +104,7 @@ func main() {
 
 		// Set up API endpoint for data
 		http.HandleFunc("/mapapi/location", internal.GetLocation) // GET requests for location
-		http.HandleFunc("/api/locationcomment/", internal.GetLocationComment)
+		http.HandleFunc("/locationcomment", internal.GetLocationComment)
 		http.HandleFunc("/getkey", internal.ServeClientPublicKey)
 		http.HandleFunc("/sendkey", internal.DecryptClientAESKey)
 		http.HandleFunc("/loginattempt", internal.AttemptLogin)
