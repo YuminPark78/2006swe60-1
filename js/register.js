@@ -16,11 +16,11 @@ async function onSubmit(event){
 	}
 	if (!lowerCase.test(password) || !upperCase.test(password) || !digit.test(password) || !specialCharacter.test(password) || !minLength.test(password)) {
 		const results = {
-			lowerCase: lowerCase.test(password) ? '✓' : '✗',
-			upperCase: upperCase.test(password) ? '✓' : '✗',
-			digit: digit.test(password) ? '✓' : '✗',
-			specialCharacter: specialCharacter.test(password) ? '✓' : '✗',
-			minLength: minLength.test(password) ? '✓' : '✗'
+			lowerCase: lowerCase.test(password) ? '[/]' : '[x]',
+			upperCase: upperCase.test(password) ? '[/]' : '[x]',
+			digit: digit.test(password) ? '[/]' : '[x]',
+			specialCharacter: specialCharacter.test(password) ? '[/]' : '[x]',
+			minLength: minLength.test(password) ? '[/]' : '[x]'
 		};
 		alert(`Password does not meet the requirement.
 	One Lowercase Letter: ${results.lowerCase}
