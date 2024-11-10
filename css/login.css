@@ -76,15 +76,15 @@ h1 {
 
 }
 
-
-input {
-    padding: 20px;
+input[type="text"], input[type="password"] {
+    padding: 10px;
     border: 1px solid #ccc;
     color: black; 
     font-size: 18px; 
     border-radius: 5px;
     width: 350px;
     margin-left: 20px;
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
 }
 
 button {
