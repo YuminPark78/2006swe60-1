@@ -59,7 +59,7 @@ func main() {
 		// Serve HTML file (main page)
 		http.HandleFunc("/map", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html")
-			http.ServeFile(w, r, "./web/MapPage.html")
+			http.ServeFile(w, r, "./web/map.html")
 		})
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html")
