@@ -5,7 +5,11 @@ function guide() {
 function storeTextileQuantity() {
     const quantity = document.getElementById('textileQuantity').value;
 
-
+	if (quantity <= 0) {
+		alert("Quantity must be than 0");
+		return 'invalid';
+	}
+	
     if (quantity >= 10) {
      
         sessionStorage.setItem("textileQuantity", quantity);
@@ -20,7 +24,11 @@ function storeTextileQuantity() {
 function redirect() {
    
     const isValidQuantity = storeTextileQuantity();
-
+	
+	if (isValidQuantity === 'invalid') {
+		return;
+	}
+	
     if (isValidQuantity) {
         window.location.href="/textiles2";
     }
