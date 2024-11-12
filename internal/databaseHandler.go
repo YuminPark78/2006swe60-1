@@ -19,7 +19,7 @@ func GetDatabaseWriter(dataSourceName string) SqlWrite {
 }
 
 type SqlRead interface {
-	ConcurrentRead(query string, args ...interface{}) ([]map[string]string, error)
+	Read(query string, args ...interface{}) ([]map[string]string, error)
 }
 
 func GetDatabaseReader(dataSourceName string) SqlRead {
@@ -27,7 +27,7 @@ func GetDatabaseReader(dataSourceName string) SqlRead {
 }
 
 type SqlRetrieveValue interface {
-	ConcurrentRetrieveValue(dest *string, query string, args ...interface{}) error
+	RetrieveValue(dest *string, query string, args ...interface{}) error
 }
 
 func GetDatabaseValueRetriever(dataSourceName string) SqlRetrieveValue {
@@ -127,14 +127,18 @@ func isSelectQuery(query string) bool {
 	return strings.HasPrefix(strings.ToUpper(trimmedQuery), "SELECT")
 }
 
+func (handler *DatabaseHandler) Read(query string, args ...interface{}) ([]map[string]string, error) {
+	return handler.ConcurrentRead(query, args...)
+}
+
 // ConcurrentRead performs a read operation, validating the query to ensure it’s a SELECT statement
 func (handler *DatabaseHandler) ConcurrentRead(query string, args ...interface{}) ([]map[string]string, error) {
 	if !isSelectQuery(query) {
-		log.Printf("ConcurrentRead only supports SELECT queries. Query received: %s\n", query)
-		return nil, fmt.Errorf("ConcurrentRead only supports SELECT queries")
+		log.Printf("Read only supports SELECT queries. Query received: %s\n", query)
+		return nil, fmt.Errorf("read only supports SELECT queries")
 	}
 
-	fmt.Printf("Starting ConcurrentRead with query: %s, args: %v\n", query, args)
+	fmt.Printf("Starting Read with query: %s, args: %v\n", query, args)
 
 	rows, err := handler.db.Query(query, args...)
 	if err != nil {
@@ -188,18 +192,22 @@ func (handler *DatabaseHandler) ConcurrentRead(query string, args ...interface{}
 		return nil, err
 	}
 
-	fmt.Printf("ConcurrentRead completed with results: %v\n", results)
+	fmt.Printf("Read completed with results: %v\n", results)
 	return results, nil
+}
+
+func (handler *DatabaseHandler) RetrieveValue(dest *string, query string, args ...interface{}) error {
+	return handler.ConcurrentRetrieveValue(dest, query, args...)
 }
 
 // ConcurrentRetrieveValue performs a read operation, validating the query to ensure it’s a SELECT statement
 func (handler *DatabaseHandler) ConcurrentRetrieveValue(dest *string, query string, args ...interface{}) error {
 	if !isSelectQuery(query) {
-		log.Printf("ConcurrentRetrieveValue only supports SELECT queries. Query received: %s\n", query)
-		return fmt.Errorf("ConcurrentRetrieveValue only supports SELECT queries")
+		log.Printf("RetrieveValue only supports SELECT queries. Query received: %s\n", query)
+		return fmt.Errorf("RetrieveValue only supports SELECT queries")
 	}
 
-	fmt.Printf("Starting ConcurrentRetrieveValue with query: %s, args: %v\n", query, args)
+	fmt.Printf("Starting RetrieveValue with query: %s, args: %v\n", query, args)
 
 	var value interface{}
 	row := handler.db.QueryRow(query, args...)
@@ -222,7 +230,7 @@ func (handler *DatabaseHandler) ConcurrentRetrieveValue(dest *string, query stri
 		return fmt.Errorf("unexpected type for database value: %T", v)
 	}
 
-	fmt.Printf("ConcurrentRetrieveValue completed with value: %s\n", *dest)
+	fmt.Printf("RetrieveValue completed with value: %s\n", *dest)
 	return nil
 }
 

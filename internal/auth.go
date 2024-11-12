@@ -56,7 +56,7 @@ func ServeClientPublicKey(w http.ResponseWriter, r *http.Request) {
 
 	var publicKey string
 	vr := GetDatabaseValueRetriever("db/data.db")
-	err := vr.ConcurrentRetrieveValue(&publicKey, `SELECT publicKey FROM SessionKeys WHERE sessionID = (?)`, sessionID)
+	err := vr.RetrieveValue(&publicKey, `SELECT publicKey FROM SessionKeys WHERE sessionID = (?)`, sessionID)
 	fmt.Printf(publicKey)
 	if err != nil {
 		err := generateClientKey(sessionID)
@@ -64,7 +64,7 @@ func ServeClientPublicKey(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = vr.ConcurrentRetrieveValue(&publicKey, `SELECT publicKey FROM SessionKeys WHERE sessionID = (?)`, sessionID)
+		err = vr.RetrieveValue(&publicKey, `SELECT publicKey FROM SessionKeys WHERE sessionID = (?)`, sessionID)
 	}
 
 	w.Header().Set("Content-Type", "application/x-pem-file")
@@ -99,7 +99,7 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 	// Retrieve the private key from the database
 	var privateKeyPEM string
 	vr := GetDatabaseValueRetriever("db/data.db")
-	err := vr.ConcurrentRetrieveValue(&privateKeyPEM, "SELECT privateKey FROM SessionKeys WHERE sessionID = (?)", clientID)
+	err := vr.RetrieveValue(&privateKeyPEM, "SELECT privateKey FROM SessionKeys WHERE sessionID = (?)", clientID)
 	if err != nil {
 		http.Error(w, "SessionID not found", http.StatusNotFound)
 		return
@@ -160,7 +160,7 @@ func getAESKey(clientID string) ([]byte, error) {
 	var aesKeyHex string
 	clientID = strings.ReplaceAll(clientID, "+", " ")
 	vr := GetDatabaseValueRetriever("db/data.db")
-	err := vr.ConcurrentRetrieveValue(&aesKeyHex, "SELECT aesKey FROM SessionKeys WHERE sessionID = (?)", clientID)
+	err := vr.RetrieveValue(&aesKeyHex, "SELECT aesKey FROM SessionKeys WHERE sessionID = (?)", clientID)
 	if err != nil {
 		fmt.Printf(err.Error())
 		return nil, err
@@ -183,7 +183,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) string {
 	// Query the database to validate the LoginID and retrieve the username
 	var username string
 	vr := GetDatabaseValueRetriever("db/data.db")
-	err = vr.ConcurrentRetrieveValue(&username, "SELECT Username FROM LoggedIn WHERE LoginID = (?)", LoginID)
+	err = vr.RetrieveValue(&username, "SELECT Username FROM LoggedIn WHERE LoginID = (?)", LoginID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("invalid session")

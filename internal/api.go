@@ -47,7 +47,7 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 	}
 	reader := GetDatabaseReader("db/data.db")
 	// Use a parameterized query to safely insert the category
-	rows, err := reader.ConcurrentRead(
+	rows, err := reader.Read(
 		`SELECT Locations.*
 		FROM Locations
 		JOIN RecycleCategory 
@@ -81,7 +81,7 @@ func GetLocationComment(w http.ResponseWriter, r *http.Request) {
 
 	// Use a parameterized query to safely insert the category
 	reader := GetDatabaseReader("db/data.db")
-	rows, err := reader.ConcurrentRead(
+	rows, err := reader.Read(
 		`SELECT Comments.*
 		FROM Comments
 		WHERE Comments.Latitude = ? AND Comments.Longitude =?`, lat, long)
@@ -169,7 +169,7 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	query := `SELECT hashedPassword FROM Users WHERE username = ?`
 	vr := GetDatabaseValueRetriever("db/data.db")
 	// Execute the query and scan the result into the hashedPassword variable
-	err = vr.ConcurrentRetrieveValue(&hashedPassword, query, username)
+	err = vr.RetrieveValue(&hashedPassword, query, username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("username %s not found", username)
@@ -185,7 +185,7 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 
 	var salt string
 	query = `SELECT salt FROM Users WHERE username = ?`
-	err = vr.ConcurrentRetrieveValue(&salt, query, username)
+	err = vr.RetrieveValue(&salt, query, username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("username %s not found", username) // Username doesn't exist
@@ -280,7 +280,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reader := GetDatabaseReader("db/data.db")
-	rows, err := reader.ConcurrentRead(`
+	rows, err := reader.Read(`
         SELECT c.Date, l.Name AS Location, c.Comment, c.Longitude, c.Latitude
         FROM Comments c
         JOIN Locations l ON c.Latitude = l.Latitude AND c.Longitude = l.Longitude
@@ -313,7 +313,7 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reader := GetDatabaseReader("db/data.db")
-	rows, err := reader.ConcurrentRead(`
+	rows, err := reader.Read(`
         SELECT l.Name AS Name, l.Address AS Address, l.Latitude AS Latitude, l.Longitude AS Longitude
         FROM Bookmarks b
         JOIN Locations l ON b.Latitude = l.Latitude AND b.Longitude = l.Longitude
