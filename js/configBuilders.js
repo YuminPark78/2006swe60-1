@@ -8,7 +8,6 @@ class paramBuildTemplate {
         this.uri = uri
     }
     build(pointlist, start=null, selected=null){
-        this.temp = pointlist.slice();
         this.pointlist = pointlist;
         console.log("MainBuild",pointlist[0])
         const reference = start??selected??pointlist[0];
@@ -17,7 +16,6 @@ class paramBuildTemplate {
         this.top = parseFloat(reference.get("lat"));
         this.bottom = this.top;
         this.colourlist = [];
-        this.elementno = 0;
         this.zoom = 0;
         return this.uri(this.config(this));
     }
