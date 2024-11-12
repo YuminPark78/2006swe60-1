@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/getComments')
         .then(res => res.json())
         .then(data => {
-            data.comments.forEach(comment => {
+            data.comments.reverse().forEach(comment => {
                 const commentDiv = document.createElement('div');
                 commentDiv.className = 'comment';
                 

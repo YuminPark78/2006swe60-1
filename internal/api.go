@@ -45,9 +45,9 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Category parameter is required", http.StatusBadRequest)
 		return
 	}
-	db := GetDatabaseHandler("db/data.db")
+	reader := GetDatabaseReader("db/data.db")
 	// Use a parameterized query to safely insert the category
-	rows, err := db.ConcurrentRead(
+	rows, err := reader.ConcurrentRead(
 		`SELECT Locations.*
 		FROM Locations
 		JOIN RecycleCategory 
@@ -80,8 +80,8 @@ func GetLocationComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use a parameterized query to safely insert the category
-	db := GetDatabaseHandler("db/data.db")
-	rows, err := db.ConcurrentRead(
+	reader := GetDatabaseReader("db/data.db")
+	rows, err := reader.ConcurrentRead(
 		`SELECT Comments.*
 		FROM Comments
 		WHERE Comments.Latitude = ? AND Comments.Longitude =?`, lat, long)
@@ -167,9 +167,9 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	var hashedPassword string
 	// SQL query to retrieve the hashed password for the given username
 	query := `SELECT hashedPassword FROM Users WHERE username = ?`
-	db := GetDatabaseHandler("db/data.db")
+	vr := GetDatabaseValueRetriever("db/data.db")
 	// Execute the query and scan the result into the hashedPassword variable
-	err = db.ConcurrentRetrieveValue(&hashedPassword, query, username)
+	err = vr.ConcurrentRetrieveValue(&hashedPassword, query, username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("username %s not found", username)
@@ -185,7 +185,7 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 
 	var salt string
 	query = `SELECT salt FROM Users WHERE username = ?`
-	err = db.ConcurrentRetrieveValue(&salt, query, username)
+	err = vr.ConcurrentRetrieveValue(&salt, query, username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("username %s not found", username) // Username doesn't exist
@@ -226,7 +226,8 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	loginID := hex.EncodeToString(loginIDBytes)
 
 	timestamp := time.Now().Unix()
-	err = db.Write(`
+	writer := GetDatabaseWriter("db/data.db")
+	err = writer.Write(`
 		INSERT INTO LoggedIn (Username, LoginID, timestamp) 
 		VALUES (?, ?, ?)
 		ON CONFLICT(Username) DO UPDATE 
@@ -278,8 +279,8 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `Not Logged In`, http.StatusUnauthorized)
 		return
 	}
-	db := GetDatabaseHandler("db/data.db")
-	rows, err := db.ConcurrentRead(`
+	reader := GetDatabaseReader("db/data.db")
+	rows, err := reader.ConcurrentRead(`
         SELECT c.Date, l.Name AS Location, c.Comment, c.Longitude, c.Latitude
         FROM Comments c
         JOIN Locations l ON c.Latitude = l.Latitude AND c.Longitude = l.Longitude
@@ -311,8 +312,8 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `Not Logged In`, http.StatusUnauthorized)
 		return
 	}
-	db := GetDatabaseHandler("db/data.db")
-	rows, err := db.ConcurrentRead(`
+	reader := GetDatabaseReader("db/data.db")
+	rows, err := reader.ConcurrentRead(`
         SELECT l.Name AS Name, l.Address AS Address, l.Latitude AS Latitude, l.Longitude AS Longitude
         FROM Bookmarks b
         JOIN Locations l ON b.Latitude = l.Latitude AND b.Longitude = l.Longitude
@@ -369,8 +370,8 @@ func AddBookmark(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Coordinate parameters required", http.StatusBadRequest)
 		return
 	}
-	db := GetDatabaseHandler("db/data.db")
-	err = db.Write(`
+	writer := GetDatabaseWriter("db/data.db")
+	err = writer.Write(`
         INSERT INTO Bookmarks (Username, Latitude, Longitude)
         VALUES (?, ?, ?)`, username, coords.Lat, coords.Long)
 
@@ -407,8 +408,8 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var date = time.Now().Format("2006-01-02")
-	db := GetDatabaseHandler("db/data.db")
-	err = db.Write(`
+	writer := GetDatabaseWriter("db/data.db")
+	err = writer.Write(`
         INSERT INTO Comments (Username, Latitude, Longitude, Comment, Date)
         VALUES (?, ?, ?, ?, ?)`, username, comment.Lat, comment.Long, comment.Comment, date)
 
