@@ -8,7 +8,7 @@ We are from group 60 from lab group SCS4, there are 6 members in our group:
 
 | Name              | Github Account                                           | Email                 |
 |-------------------|----------------------------------------------------------|-----------------------|
-| Park Yu Min       | [YuMinPark78](https://github.com/YuminPark78)            | [yumin002@e.ntu.edu.sg](mailto:yumin002@e.ntu.edu.sg) |
+| Park Yu Min       | [YuminPark78](https://github.com/YuminPark78)            | [yumin002@e.ntu.edu.sg](mailto:yumin002@e.ntu.edu.sg) |
 | Shen Jia Cheng    | [shenjc01](https://github.com/shenjc01)                  | [jshen010@e.ntu.edu.sg](mailto:jshen010@e.ntu.edu.sg) |
 | Saravana Deepika  | [DeepikaSaravana5](https://github.com/DeepikaSaravanan5) | [deepika008@e.ntu.edu.sg](mailto:deepika008@e.ntu.edu.sg) |
 | Ng Wei Yu         | [firepiratex](https://github.com/firepiratex)            | [wng081@e.ntu.edu.sg](mailto:wng081@e.ntu.edu.sg)  |
