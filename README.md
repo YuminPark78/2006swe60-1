@@ -23,7 +23,7 @@ We are from group 60 from lab group SCS4, there are 6 members in our group:
 
 ## Features
 
-- [x] Login/Register
+- [x] Login/Logout/Register
 - [x] Guide
 - [x] Feedback
 - [x] Search Location
