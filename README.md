@@ -2,6 +2,8 @@
 
 NTU SC2006 Software Engineering Group Project
 
+In alignment with Singapore’s Zero Waste Masterplan to reduce waste sent to landfills by 30% by 2030, we as a group have decided to create a convenient and intuitive website for users to find their most convenient recycling locations. Therefore, the project mission statement is “Recyclo empowers Singapore residents to locate the nearest recycling facilities that accept specific types of waste, addressing the challenge of finding accessible and suitable locations for responsible disposal. By streamlining this process, Recyclo supports Singapore’s green initiatives, reduces landfill waste, and encourages sustainable habits among residents for a cleaner environment.
+
 ## Team Members
 
 We are from group 60 from lab group SCS4, there are 6 members in our group:
