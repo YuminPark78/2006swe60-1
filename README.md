@@ -51,3 +51,5 @@ Open Command Prompt(cmd) navigate to the project file path and run this command
 This will create a server.exe file for you to start the server and running it will allow you to access the server by
 
 ```http://localhost:8080```
+
+At any time during the server run, one may shut down the server by typing the ```#``` character into the cmd window running the project. This will consolidate all the database updates and gracefully close the servers.
